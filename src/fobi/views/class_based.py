@@ -135,7 +135,12 @@ __all__ = (
 )
 
 class FormEntryMixin(object):
-    """Mixin class to grab the form_entry from kwargs"""
+    """
+    form_entry_query_arg is the key to query
+    form_entry_class, which is used to populate form_entry.
+    form_entry_kwarg is the key to get a value from
+    the view's kwargs against the form_entry_query_arg
+    """
     form_entry = None
     form_entry_class = FormEntry
     form_entry_kwarg = 'form_entry_id'
@@ -160,7 +165,6 @@ class FormEntryMixin(object):
         }
 
     def dispatch(self, request, *args, **kwargs):
-        """Run query to get the form_entry from the query_kwargs"""
         try:
             self.form_entry = self.get_form_entry_class()._default_manager.get(**
                 self.get_query_kwargs()
@@ -171,12 +175,18 @@ class FormEntryMixin(object):
         return super(FormEntryMixin, self).dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
-        """Add form_entry to the context"""
         kwargs['form_entry'] = self.form_entry
         return super(FormEntryMixin, self).get_context_data(**kwargs)
 
 class DeletePluginMixin(object):
-    """Mixin to delete an instance of a given entry_model"""
+    """
+    entry_model_id is the key to query entry_model_cls
+    using the view's kwarg.The html anchor is used to redirect
+    to the edit_form_entry url. A message may be set to be
+    handled by the messages framework. form_entry_id will be
+    set in dispatch once the plugin_entry has been retrieved
+    to be used later to redirect.
+    """
     entry_model_cls = None
     get_user_plugin_uids_func = None
     message = None
@@ -194,7 +204,6 @@ class DeletePluginMixin(object):
         return self.entry_model_cls
 
     def get_entry_model(self):
-        """Run query to get entry_model_cls"""
         try:
             return self.get_entry_model_cls() \
                              ._default_manager \
@@ -214,7 +223,6 @@ class DeletePluginMixin(object):
         return self.get_entry_model().form_entry
 
     def get_plugin(self):
-        """Get entry model's plugin and add the current request to it"""
         plugin = self.get_entry_model().get_plugin(request=self.request)
         plugin.request = self.request
         return plugin
@@ -226,14 +234,15 @@ class DeletePluginMixin(object):
         return self.html_anchor
 
     def redirect(self):
-        """Redirect to the edit_form_entry urls with the form_entry_id kwarg"""
+        """
+        Use html_anchor to redirect to the correct url using the form_entry_id
+        """
         redirect_url = reverse(
             'fobi.edit_form_entry', kwargs={'form_entry_id': self.form_entry_id}
         )
         return redirect("{0}{1}".format(redirect_url, self.get_html_anchor()))
 
     def dispatch(self, *args, **kwargs):
-        """Delete the form_entry object based on the form_entry_model and redirect"""
         obj = self.get_entry_model()
         self.form_entry_id = obj.form_entry.id
         plugin = self.get_plugin()
