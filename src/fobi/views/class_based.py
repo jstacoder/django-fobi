@@ -135,7 +135,12 @@ __all__ = (
 )
 
 class FormEntryMixin(object):
-    """ mixin class to grab the form_entry from kwargs """
+    """
+    form_entry_query_arg is the key to query
+    form_entry_class, which is used to populate form_entry.
+    form_entry_kwarg is the key to get a value from
+    the view's kwargs against the form_entry_query_arg
+    """
     form_entry = None
     form_entry_class = FormEntry
     form_entry_kwarg = 'form_entry_id'
@@ -151,8 +156,9 @@ class FormEntryMixin(object):
         return self.form_entry_class
 
     def get_query_kwargs(self):
+        """Use mixin's properties to build a query to get a form_entry"""
         return {
-            self.get_form_entry_query_arg() : 
+            self.get_form_entry_query_arg() :
             self.kwargs.get(
                 self.get_form_entry_kwarg()
             )
@@ -173,6 +179,14 @@ class FormEntryMixin(object):
         return super(FormEntryMixin, self).get_context_data(**kwargs)
 
 class DeletePluginMixin(object):
+    """
+    entry_model_id is the key to query entry_model_cls
+    using the view's kwarg.The html anchor is used to redirect
+    to the edit_form_entry url. A message may be set to be
+    handled by the messages framework. form_entry_id will be
+    set in dispatch once the plugin_entry has been retrieved
+    to be used later to redirect.
+    """
     entry_model_cls = None
     get_user_plugin_uids_func = None
     message = None
@@ -220,6 +234,9 @@ class DeletePluginMixin(object):
         return self.html_anchor
 
     def redirect(self):
+        """
+        Use html_anchor to redirect to the correct url using the form_entry_id
+        """
         redirect_url = reverse(
             'fobi.edit_form_entry', kwargs={'form_entry_id': self.form_entry_id}
         )
