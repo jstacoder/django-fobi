@@ -2,14 +2,15 @@ import gc
 import logging
 
 from selenium import webdriver
+from selenium.webdriver.common.action_chains import ActionChains
+from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.firefox.firefox_binary import FirefoxBinary
 from selenium.webdriver.support.wait import WebDriverWait
 
 from django.core.management import call_command
-from django.test import LiveServerTestCase
+from django.urls import reverse
 from django.conf import settings
-
-from nine.versions import DJANGO_GTE_1_10
+from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 
 from . import constants
 from .helpers import (
@@ -17,11 +18,6 @@ from .helpers import (
     get_or_create_admin_user,
     phantom_js_clean_up,
 )
-
-if DJANGO_GTE_1_10:
-    from django.urls import reverse
-else:
-    from django.core.urlresolvers import reverse
 
 __title__ = 'fobi.tests.test_browser_build_dynamic_forms'
 __author__ = 'Artur Barseghyan <artur.barseghyan@gmail.com>'
@@ -39,7 +35,7 @@ WAIT = False
 WAIT_FOR = 0
 
 
-class BaseFobiBrowserBuldDynamicFormsTest(LiveServerTestCase):
+class BaseFobiBrowserBuldDynamicFormsTest(StaticLiveServerTestCase):
     """Browser tests django-fobi bulding forms functionality.
 
     Backed up by selenium. This test is based on the bootstrap3 theme.
@@ -67,12 +63,26 @@ class BaseFobiBrowserBuldDynamicFormsTest(LiveServerTestCase):
     @classmethod
     def setUpClass(cls):
         """Set up class."""
-        # cls.driver = WebDriver()
+        chrome_driver_path = getattr(
+            settings,
+            'CHROME_DRIVER_EXECUTABLE_PATH',
+            None
+        )
+        chrome_driver_options = getattr(
+            settings,
+            'CHROME_DRIVER_OPTIONS',
+            None
+        )
         firefox_bin_path = getattr(settings, 'FIREFOX_BIN_PATH', None)
         phantom_js_executable_path = getattr(
             settings, 'PHANTOM_JS_EXECUTABLE_PATH', None
         )
-        if phantom_js_executable_path is not None:
+        if chrome_driver_path is not None:
+            cls.driver = webdriver.Chrome(
+                executable_path=chrome_driver_path,
+                options=chrome_driver_options
+            )
+        elif phantom_js_executable_path is not None:
             if phantom_js_executable_path:
                 cls.driver = webdriver.PhantomJS(
                     executable_path=phantom_js_executable_path
@@ -121,6 +131,11 @@ class BaseFobiBrowserBuldDynamicFormsTest(LiveServerTestCase):
     # +++++++++++++++++++++++++++ General +++++++++++++++++++++++++++
     # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
+    def _maximize_window(self):
+        self.driver.set_window_position(0, 0)
+        self.driver.set_window_size(1024 * 2, 768 * 2)
+        self.driver.maximize_window()
+
     def _get_live_server_url(self):
         """Get live server URL."""
         return self.LIVE_SERVER_URL \
@@ -138,7 +153,7 @@ class BaseFobiBrowserBuldDynamicFormsTest(LiveServerTestCase):
                 reverse('auth_login')
             )
         )
-        self.driver.maximize_window()
+        self._maximize_window()
         username_input = self.driver.find_element_by_name("username")
         username_input.send_keys(constants.FOBI_TEST_USER_USERNAME)
         password_input = self.driver.find_element_by_name("password")
@@ -160,7 +175,7 @@ class BaseFobiBrowserBuldDynamicFormsTest(LiveServerTestCase):
 
     def _click(self, element):
         """Click on any element."""
-        self.driver.execute_script("$(arguments[0]).click();", element)
+        self.driver.execute_script("arguments[0].click();", element)
 
     def _aggressive_click(self, element):
         """Aggressive click."""
@@ -182,6 +197,10 @@ class BaseFobiBrowserBuldDynamicFormsTest(LiveServerTestCase):
             "window.scrollBy({0}, {1});".format(0, -100)
         )
 
+    def _move_to_element(self, form_element, simple=False):
+        """Move to element."""
+        ActionChains(self.driver).move_to_element(form_element).perform()
+
     def _scroll_to(self, x, y):
         """Scroll to."""
         self.driver.execute_script(
@@ -193,3 +212,13 @@ class BaseFobiBrowserBuldDynamicFormsTest(LiveServerTestCase):
         self.driver.execute_script(
             "window.scrollBy({0}, {1});".format(x, y)
         )
+
+    def _scroll_page_top(self):
+        """Scroll to the page top."""
+        html = self.driver.find_element_by_tag_name('html')
+        html.send_keys(Keys.HOME)
+
+    def _scroll_page_bottom(self):
+        """Scroll to the page bottom."""
+        html = self.driver.find_element_by_tag_name('html')
+        html.send_keys(Keys.END)

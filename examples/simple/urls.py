@@ -5,10 +5,11 @@ from django.contrib import admin
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from django.conf.urls.static import static
 from django.views.generic import TemplateView
+from django.contrib.auth import views as auth_views
 
 from fobi.settings import DEFAULT_THEME
 
-from nine import versions
+from django_nine import versions
 
 admin.autodiscover()
 
@@ -48,6 +49,10 @@ url_patterns_args = [
         include('fobi.urls.edit')),
 
     url(r'^admin_tools/', include('admin_tools.urls')),
+
+    url(r'^login/$',
+        auth_views.LoginView.as_view(template_name='registration/login.html'),
+        name='auth_login'),
 ]
 
 if versions.DJANGO_GTE_2_0:
@@ -61,7 +66,7 @@ else:
 
 url_patterns_args += [
     # django-registration URLs:
-    url(r'^accounts/', include('registration.backends.simple.urls')),
+    url(r'^accounts/', include('django_registration.backends.one_step.urls' if versions.DJANGO_GTE_3_0 else 'registration.backends.simple.urls')),
 
     # foo URLs:
     url(r'^foo/', include('foo.urls')),
@@ -75,10 +80,7 @@ url_patterns_args += [
     # url(r'^', include('fobi.contrib.apps.public_forms.urls')),
 ]
 
-if versions.DJANGO_LTE_1_7:
-    urlpatterns += i18n_patterns('', *url_patterns_args)
-else:
-    urlpatterns += i18n_patterns(*url_patterns_args)
+urlpatterns += i18n_patterns(*url_patterns_args)
 
 # Serving media and static in debug/developer mode.
 if settings.DEBUG:
@@ -94,10 +96,7 @@ if 'feincms' in settings.INSTALLED_APPS:
     url_patterns_args = [
         url(r'^pages/', include('feincms.urls')),
     ]
-    if versions.DJANGO_LTE_1_7:
-        urlpatterns += i18n_patterns('', *url_patterns_args)
-    else:
-        urlpatterns += i18n_patterns(*url_patterns_args)
+    urlpatterns += i18n_patterns(*url_patterns_args)
 
 # # Conditionally include django-markdownx
 # if 'markdownx' in settings.INSTALLED_APPS:
@@ -110,10 +109,7 @@ if 'ckeditor_uploader' in settings.INSTALLED_APPS:
     url_patterns_args = [
         url(r'^ckeditor/', include('ckeditor_uploader.urls')),
     ]
-    if versions.DJANGO_LTE_1_7:
-        urlpatterns += i18n_patterns('', *url_patterns_args)
-    else:
-        urlpatterns += i18n_patterns(*url_patterns_args)
+    urlpatterns += i18n_patterns(*url_patterns_args)
 
 # Conditionally including DjangoCMS URls in case if
 # DjangoCMS in installed apps.
@@ -121,10 +117,7 @@ if 'cms' in settings.INSTALLED_APPS:
     url_patterns_args = [
         url(r'^cms-pages/', include('cms.urls')),
     ]
-    if versions.DJANGO_LTE_1_7:
-        urlpatterns += i18n_patterns('', *url_patterns_args)
-    else:
-        urlpatterns += i18n_patterns(*url_patterns_args)
+    urlpatterns += i18n_patterns(*url_patterns_args)
 
 # Conditionally including Django REST framework integration app
 if 'fobi.contrib.apps.drf_integration' in settings.INSTALLED_APPS:
@@ -153,15 +146,12 @@ if getattr(settings, 'ENABLE_CAPTCHA', False):
         except ImportError:
             pass
 
-if getattr(settings, 'DEBUG', False) and \
-        getattr(settings, 'DEBUG_TOOLBAR', False):
+if (
+    getattr(settings, 'DEBUG', False)
+    and getattr(settings, 'DEBUG_TOOLBAR', False)
+):
     import debug_toolbar
 
-    if versions.DJANGO_GTE_2_2:
-        urlpatterns = [
-            url(r'^__debug__/', debug_toolbar.urls),
-        ] + urlpatterns
-    else:
-        urlpatterns = [
-            url(r'^__debug__/', include(debug_toolbar.urls)),
-        ] + urlpatterns
+    urlpatterns = [
+        url(r'^__debug__/', include(debug_toolbar.urls)),
+    ] + urlpatterns

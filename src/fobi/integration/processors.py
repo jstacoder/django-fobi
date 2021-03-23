@@ -3,9 +3,7 @@ from django.contrib import messages
 from django.shortcuts import redirect
 from django.template import RequestContext
 from django.template.loader import render_to_string
-from django.utils.translation import ugettext_lazy as _
-
-from nine.versions import DJANGO_GTE_1_8, DJANGO_GTE_1_10
+from django.utils.translation import gettext_lazy as _
 
 from ..base import (
     fire_form_callbacks,
@@ -120,10 +118,7 @@ class IntegrationProcessor(object):
         """
         template_name = self.get_form_template_name(request, instance)
 
-        if DJANGO_GTE_1_10:
-            user_is_authenticated = request.user.is_authenticated
-        else:
-            user_is_authenticated = request.user.is_authenticated()
+        user_is_authenticated = request.user.is_authenticated
 
         # Handle public/non-public forms. If form requires user authentication
         # redirect to login form with next parameter set to current request
@@ -251,19 +246,11 @@ class IntegrationProcessor(object):
         if not template_name:
             template_name = theme.view_embed_form_entry_ajax_template
 
-        render_kwargs = {}
-        if DJANGO_GTE_1_8:
-            render_kwargs = {
-                'template_name': template_name,
-                'context': context,
-                'request': request,
-            }
-        else:
-            render_kwargs = {
-                'template_name': template_name,
-                'dictionary': context,
-                'context_instance': RequestContext(request),
-            }
+        render_kwargs = {
+            'template_name': template_name,
+            'context': context,
+            'request': request,
+        }
 
         self.rendered_output = render_to_string(**render_kwargs)
 
@@ -281,19 +268,11 @@ class IntegrationProcessor(object):
         template_name = self.get_login_required_template_name(request,
                                                               instance)
 
-        render_kwargs = {}
-        if DJANGO_GTE_1_8:
-            render_kwargs = {
-                'template_name': template_name,
-                'context': context,
-                'request': request,
-            }
-        else:
-            render_kwargs = {
-                'template_name': template_name,
-                'dictionary': context,
-                'context_instance': RequestContext(request),
-            }
+        render_kwargs = {
+            'template_name': template_name,
+            'context': context,
+            'request': request,
+        }
 
         return render_to_string(**render_kwargs)
 
@@ -320,19 +299,11 @@ class IntegrationProcessor(object):
         if not template_name:
             template_name = theme.embed_form_entry_submitted_ajax_template
 
-        render_kwargs = {}
-        if DJANGO_GTE_1_8:
-            render_kwargs = {
-                'template_name': template_name,
-                'context': context,
-                'request': request,
-            }
-        else:
-            render_kwargs = {
-                'template_name': template_name,
-                'dictionary': context,
-                'context_instance': RequestContext(request),
-            }
+        render_kwargs = {
+            'template_name': template_name,
+            'context': context,
+            'request': request,
+        }
 
         self.rendered_output = render_to_string(**render_kwargs)
 

@@ -277,29 +277,33 @@ TEST_FORM_FIELD_DATA = {
     # 'test_unicode_text': u'Անուն',
 }
 
-TEST_FORM_HANDLER_PLUGIN_DATA = {
-    force_text(DBStoreHandlerPlugin.name): None,
-    force_text(MailHandlerPlugin.name): {
-        'from_name': "From me",
-        'from_email': "from@example.com",
-        'to_name': "To you",
-        'to_email': "to@example.com",
-        'subject': "Test email subject",
-        'body': "Test email body",
-    },
-    force_text(MailSenderHandlerPlugin.name): {
+# Order of the elements matters a lot, since `Mail` and `Mail the sender`
+# both share the `Mail` word. If order isn't taken into consideration,
+# it may happen that the wrong plugin is detected (occasional on Python2).
+# Therefore, an ordered dict. Note that `MailSenderHandlerPlugin` shall
+# be placed before the `MailHandlerPlugin`.
+TEST_FORM_HANDLER_PLUGIN_DATA = OrderedDict([
+    (force_text(DBStoreHandlerPlugin.name), None),
+    (force_text(MailSenderHandlerPlugin.name), {
         'from_name': "From me",
         'from_email': "from@example.com",
         'to_name': "To you",
         'form_field_name_to_email': "test_email_input",
         'subject': "Test email subject",
         'body': "Test email body",
-    },
-    force_text(HTTPRepostHandlerPlugin.name): {
+    }),
+    (force_text(MailHandlerPlugin.name), {
+        'from_name': "From me",
+        'from_email': "from@example.com",
+        'to_name': "To you",
+        'to_email': "to@example.com",
+        'subject': "Test email subject",
+        'body': "Test email body",
+    }),
+    (force_text(HTTPRepostHandlerPlugin.name), {
         'endpoint_url': 'http://dev.example.com'
-    }
-}
-
+    }),
+])
 
 TEST_MAILCHIMP_IMPORTER_FORM_DATA = [
     {
@@ -588,6 +592,17 @@ TEST_DYNAMIC_FORMS_DEFINITION_DATA = OrderedDict([
             '}'
         )
     ),
+    # (
+    #     'sample_decimal',
+    #     (
+    #         DecimalInputPlugin.uid,
+    #         '{'
+    #         '"name": "sample_decimal", '
+    #         '"required": false, '
+    #         '"label": "Sample decimal"'
+    #         '}'
+    #     )
+    # ),
     (
         'bio',
         (
@@ -632,7 +647,7 @@ TEST_DYNAMIC_FORMS_DEFINITION_DATA = OrderedDict([
     # ),
 ])
 
-TEST_DYNAMIC_FORMS_DEFINITION_DATA_DRF = copy.copy(
+TEST_DYNAMIC_FORMS_DEFINITION_DATA_DRF = copy.deepcopy(
     TEST_DYNAMIC_FORMS_DEFINITION_DATA
 )
 TEST_DYNAMIC_FORMS_DEFINITION_DATA_DRF.pop('ignore_01')
@@ -657,6 +672,11 @@ TEST_DYNAMIC_FORMS_PUT_DATA_ALL = {
     'drivers_license': FAKER.pybool(),
     'special_fields': FAKER.pystr(),
     'number_of_children': FAKER.pyint(),
+    # 'sample_decimal': "%.5f" % FAKER.pydecimal(
+    #     left_digits=3,
+    #     right_digits=5,
+    #     positive=True
+    # ),
     'bio': FAKER.text(),
     # 'unicode_name': u'Անուն',
 }
@@ -693,6 +713,12 @@ TEST_DYNAMIC_FORMS_OPTIONS_RESPONSE = OrderedDict([
                                          (u'required', False),
                                          (u'read_only', False),
                                          (u'label', u'Number of children')])),
+    # (u'sample_decimal', OrderedDict([(u'type', u'decimal'),
+    #                                  (u'required', False),
+    #                                  (u'read_only', False),
+    #                                  (u'label', u'Sample decimal'),
+    #                                  ('max_digits', 10),
+    #                                  ('decimal_places', 5)])),
     (u'bio', OrderedDict([(u'type', u'string'),
                           (u'required', True),
                           # (u'max_length', None),

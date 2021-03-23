@@ -3,34 +3,17 @@ from collections import OrderedDict
 from django.forms.forms import BaseForm
 from django.forms.widgets import media_property
 from django.http import HttpResponseRedirect
+from django.urls import reverse
 
-from nine.versions import (
-    DJANGO_GTE_1_8,
-    DJANGO_GTE_1_10,
+from formtools.wizard.views import (
+    CookieWizardView,
+    SessionWizardView,
+    WizardView,
 )
 
 from six import with_metaclass
 
 from .constants import WIZARD_TYPE_COOKIE, WIZARD_TYPE_SESSION
-
-if DJANGO_GTE_1_8:
-    from formtools.wizard.views import (
-        CookieWizardView,
-        SessionWizardView,
-        WizardView,
-    )
-else:
-    from django.contrib.formtools.wizard.views import (
-        CookieWizardView,
-        SessionWizardView,
-        WizardView,
-    )
-
-
-if DJANGO_GTE_1_10:
-    from django.urls import reverse
-else:
-    from django.core.urlresolvers import reverse
 
 __title__ = 'fobi.dynamic'
 __author__ = 'Artur Barseghyan <artur.barseghyan@gmail.com>'

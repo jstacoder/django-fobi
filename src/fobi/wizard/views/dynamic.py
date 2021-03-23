@@ -7,26 +7,16 @@ from django.shortcuts import redirect
 from django.forms import formsets, ValidationError
 from django.views.generic import TemplateView
 from django.utils.decorators import classonlymethod
-from django.utils.translation import ugettext as _
-from django.utils import six
+from django.utils.translation import gettext as _
+from django.urls import reverse
 
-from nine import versions
+import six
 
-if versions.DJANGO_GTE_1_8:
-    from formtools.wizard.storage import get_storage
-    from formtools.wizard.storage.exceptions import NoFileStorageConfigured
-    from formtools.wizard.forms import ManagementForm
-else:
-    from django.contrib.formtools.wizard.storage import get_storage
-    from django.contrib.formtools.wizard.storage.exceptions import (
-        NoFileStorageConfigured
-    )
-    from django.contrib.formtools.wizard.forms import ManagementForm
+from django_nine import versions
 
-if versions.DJANGO_GTE_1_10:
-    from django.urls import reverse
-else:
-    from django.core.urlresolvers import reverse
+from formtools.wizard.storage import get_storage
+from formtools.wizard.storage.exceptions import NoFileStorageConfigured
+from formtools.wizard.forms import ManagementForm
 
 logger = logging.getLogger(__name__)
 
@@ -723,21 +713,13 @@ class DynamicWizardView(TemplateView):
 class DynamicSessionWizardView(DynamicWizardView):
     """A WizardView with pre-configured SessionStorage backend."""
 
-    if versions.DJANGO_GTE_1_8:
-        storage_name = 'formtools.wizard.storage.session.SessionStorage'
-    else:
-        storage_name = 'django.contrib.formtools.wizard.storage.session.' \
-                       'SessionStorage'
+    storage_name = 'formtools.wizard.storage.session.SessionStorage'
 
 
 class DynamicCookieWizardView(DynamicWizardView):
     """A WizardView with pre-configured CookieStorage backend."""
 
-    if versions.DJANGO_GTE_1_8:
-        storage_name = 'formtools.wizard.storage.cookie.CookieStorage'
-    else:
-        storage_name = 'django.contrib.formtools.wizard.storage.cookie.' \
-                       'CookieStorage'
+    storage_name = 'formtools.wizard.storage.cookie.CookieStorage'
 
 
 class DynamicNamedUrlWizardView(DynamicWizardView):
@@ -891,18 +873,10 @@ class DynamicNamedUrlWizardView(DynamicWizardView):
 class DynamicNamedUrlSessionWizardView(DynamicNamedUrlWizardView):
     """A NamedUrlWizardView with pre-configured SessionStorage backend."""
 
-    if versions.DJANGO_GTE_1_8:
-        storage_name = 'formtools.wizard.storage.session.SessionStorage'
-    else:
-        storage_name = 'django.contrib.formtools.wizard.storage.session.' \
-                       'SessionStorage'
+    storage_name = 'formtools.wizard.storage.session.SessionStorage'
 
 
 class DynamicNamedUrlCookieWizardView(DynamicNamedUrlWizardView):
     """A NamedUrlFormWizard with pre-configured CookieStorageBackend."""
 
-    if versions.DJANGO_GTE_1_8:
-        storage_name = 'formtools.wizard.storage.cookie.CookieStorage'
-    else:
-        storage_name = 'django.contrib.formtools.wizard.storage.cookie.' \
-                       'CookieStorage'
+    storage_name = 'formtools.wizard.storage.cookie.CookieStorage'

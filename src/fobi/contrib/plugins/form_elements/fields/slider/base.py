@@ -6,9 +6,9 @@ from django.forms.fields import ChoiceField
 from django.forms.utils import flatatt
 from django.utils.html import format_html
 from django.utils.safestring import mark_safe
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 
-from nine import versions
+from django_nine import versions
 
 from fobi.base import (
     FormFieldPlugin,

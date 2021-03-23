@@ -1,11 +1,11 @@
 -r common.txt
 -r test.txt
 -r style_checkers.txt
--r feincms_1_13.txt
+-r feincms_1_17.txt
 
 Django>=2.1,<2.2
 django-admin-tools>=0.8.0
-django-autoslug-iplweb
+django-autoslug==1.9.4
 django-ckeditor>=5.6.0
 django-debug-toolbar>=1.6
 django-formtools>=2.1

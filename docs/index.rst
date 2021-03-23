@@ -8,17 +8,42 @@ even export forms into JSON format and import them on other instances. API
 allows you to build your own form elements and form handlers (mechanisms for
 handling the submitted form data).
 
+.. image:: https://img.shields.io/pypi/v/django-fobi.svg
+   :target: https://pypi.python.org/pypi/django-fobi
+   :alt: PyPI Version
+
+.. image:: https://img.shields.io/pypi/pyversions/django-fobi.svg
+    :target: https://pypi.python.org/pypi/django-fobi/
+    :alt: Supported Python versions
+
+.. image:: https://img.shields.io/travis/barseghyanartur/django-fobi/master.svg
+   :target: http://travis-ci.org/barseghyanartur/django-fobi
+   :alt: Build Status
+
+.. image:: https://readthedocs.org/projects/django-fobi/badge/?version=latest
+    :target: http://django-fobi.readthedocs.io/en/latest/?badge=latest
+    :alt: Documentation Status
+
+.. image:: https://img.shields.io/badge/license-GPL--2.0--only%20OR%20LGPL--2.1--or--later-blue.svg
+   :target: https://github.com/barseghyanartur/django-fobi/#License
+   :alt: GPL-2.0-only OR LGPL-2.1-or-later
+
+.. image:: https://coveralls.io/repos/github/barseghyanartur/django-fobi/badge.svg?branch=master
+    :target: https://coveralls.io/github/barseghyanartur/django-fobi?branch=master
+    :alt: Coverage
+
 Prerequisites
 =============
-- Django 1.8, 1.9, 1.10, 1.11, 2.0 and 2.1.
-- Python 2.7, 3.4, 3.5, 3.6, 3.7 and PyPy.
+- Django 1.11, 2.0, 2.1, 2.2 and 3.0.
+- Python 3.5, 3.6, 3.7 and 3.8.
 
 Key concepts
 ============
-- Each form consists of elements. Form elements are divided into two groups:
+- Each form consists of elements. Form elements are divided into groups:
 
   (a) form fields (input field, textarea, hidden field, file field, etc.).
   (b) content (presentational) elements (text, image, embed video, etc.).
+  (c) security elements (captcha, etc).
 
 - Number of form elements is not limited.
 - Each form may contain handlers. Handler processes the form data (for example,
@@ -191,12 +216,6 @@ Or latest stable version from GitHub:
 .. code-block:: sh
 
     pip install https://github.com/barseghyanartur/django-fobi/archive/stable.tar.gz
-
-Or latest stable version from BitBucket:
-
-.. code-block:: sh
-
-    pip install https://bitbucket.org/barseghyanartur/django-fobi/get/stable.tar.gz
 
 (2) Add `fobi` to ``INSTALLED_APPS`` of the your projects' Django settings.
     Furthermore, all themes and plugins to be used, shall be added to the
@@ -694,7 +713,7 @@ Defining the Sample mail handler plugin.
         name = _("Sample mail")
         form = SampleMailForm
 
-        def run(self, form_entry, request, form):
+        def run(self, form_entry, request, form, form_element_entries=None):
             """To be executed by handler."""
             send_mail(
                 self.data.subject,
@@ -703,6 +722,12 @@ Defining the Sample mail handler plugin.
                 [self.data.to_email],
                 fail_silently=True
             )
+
+Register the plugin
+
+.. code-block:: python
+
+    form_handler_plugin_registry.register(SampleMailHandlerPlugin)
 
 Some form handlers are configurable, some others not. In order to
 have a user friendly way of showing the form handler settings, what's
@@ -2330,6 +2355,12 @@ To test just your working environment type:
 
     ./runtests.py
 
+To run a single test class in a given test module in your working environment type:
+
+.. code-block:: sh
+
+    ./runtests.py src/fobi/tests/test_browser_build_dynamic_forms.py::FobiBrowserBuldDynamicFormsTest -k "test_2004_submit_form"
+
 It's assumed that you have all the requirements installed. If not, first
 install the test requirements:
 
@@ -2350,6 +2381,29 @@ version of the Selenium for Python (2.53.6) works fine with Firefox 47.
 Thus, instead of using system Firefox you could better use a custom one.
 
 For PhantomJS you need to have NodeJS installed.
+
+Set up ChromeDriver
+~~~~~~~~~~~~~~~~~~~
+1. Download ChromeDriver version matching your browser. You can always find
+   proper version
+   at `chromedriver.chromium.org/downloads <https://chromedriver.chromium.org/downloads>`__:
+
+    .. code-block:: sh
+
+        wget https://chromedriver.storage.googleapis.com/79.0.3945.36/chromedriver_linux64.zip
+        unzip chromedriver_linux64.zip
+        sudo mv chromedriver /usr/bin/chromedriver79
+        sudo chown root:root /usr/bin/chromedriver79
+        sudo chmod +x /usr/bin/chromedriver79
+
+2. Specify the full path to your ChromeDriver in
+   ``CHROME_DRIVER_EXECUTABLE_PATH`` setting. Example:
+
+    .. code-block:: python
+
+        CHROME_DRIVER_EXECUTABLE_PATH = '/usr/bin/chromedriver79'
+
+After that your Selenium tests would work.
 
 Set up Firefox 47
 ~~~~~~~~~~~~~~~~~
@@ -2463,7 +2517,7 @@ or ask the `Author`_ how you could help.
 
 License
 =======
-GPL 2.0/LGPL 2.1
+GPL-2.0-only OR LGPL-2.1-or-later
 
 Support
 =======
