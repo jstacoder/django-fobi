@@ -8,7 +8,7 @@ from django.forms import formsets, ValidationError
 from django.views.generic import TemplateView
 from django.utils.decorators import classonlymethod
 from django.utils.translation import ugettext as _
-from django.utils import six
+import six
 
 from nine import versions
 
